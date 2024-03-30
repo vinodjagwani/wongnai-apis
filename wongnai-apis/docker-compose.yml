@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+  mongodb_container:
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+  fdelivery-driver-service:
+    build:
+      context: .
+      dockerfile: ./fdelivery-driver-service/src/main/docker/Dockerfile.server
+    ports:
+      - 8088:8088
+      - 9088:9088
+    depends_on:
+      - mongodb_container
+  fdelivery-order-service:
+    build:
+      context: .
+      dockerfile: ./fdelivery-order-service/src/main/docker/Dockerfile.server
+    ports:
+      - 8089:8089
+      - 9089:9089
+    depends_on:
+      - mongodb_container
+    links:
+      - fdelivery-driver-service
+
+volumes:
+  mongodb_data_container:
